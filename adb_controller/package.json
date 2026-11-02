@@ -1,0 +1,12 @@
+{
+  "name": "ovozai-phone-controller",
+  "version": "1.0.0",
+  "description": "O'zbek tilidagi OvozAI telefonni ovoz va buyruq orqali to'liq boshqarish vositasi",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": ["ai", "voice", "android", "accessibility", "uzbek"],
+  "author": "OvozAI Team",
+  "license": "MIT"
+}

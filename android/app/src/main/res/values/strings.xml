@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">OvozAI</string>
+    <string name="accessibility_service_desc">OvozAI ovozli buyruqlar orqali telefon ekrandagi tugmalarni bosish, matn kiritish va tizimni to'liq boshqarish uchun Maxsus imkoniyatlar xizmatidan foydalanadi.</string>
+</resources>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/overlayRoot"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <!-- AI Voice Response and Speech Text Card -->
+    <LinearLayout
+        android:id="@+id/speechCard"
+        android:layout_width="260dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="#DD1E1E1E"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvUserSpeech"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Eshitmoqdaman..."
+            android:textColor="#03DAC5"
+            android:textSize="13sp"
+            android:textStyle="italic" />
+
+        <TextView
+            android:id="@+id/tvAiResponse"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text=""
+            android:textColor="#FFFFFF"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- Floating Mic Button -->
+    <FrameLayout
+        android:id="@+id/bubbleLayout"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:background="@drawable/circle_button_bg"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/ivMicIcon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center"
+            android:src="@android:drawable/ic_btn_speak_now" />
+    </FrameLayout>
+</LinearLayout>
