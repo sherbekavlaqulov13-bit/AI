@@ -1,10 +1,8 @@
-name: Build OvozAI APK
+name: Build Android APK
 
 on:
   push:
-    branches: [ "**" ]
-  pull_request:
-    branches: [ "**" ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -12,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -20,32 +18,28 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Grant execute permission for gradlew
         run: |
-          cd android
-          if [ ! -f gradlew ]; then
-            gradle wrapper
-          fi
-          chmod +x gradlew
+          cd android || true
+          chmod +x gradlew || true
 
       - name: Build APK with Gradle
         run: |
-          cd android
-          ./gradlew assembleDebug --stacktrace
+          if [ -d "android" ]; then
+            cd android
+            ./gradlew assembleDebug --no-daemon
+          else
+            ./gradlew assembleDebug --no-daemon
+          fi
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: OvozAI-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-
-      - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: android/app/build/outputs/apk/debug/app-debug.apk
+          name: app-debug
+          path: |
+            android/app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/debug/*.apk
