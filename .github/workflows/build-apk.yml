@@ -19,27 +19,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Grant execute permission for gradlew
-        run: |
-          cd android || true
-          chmod +x gradlew || true
-
       - name: Build APK with Gradle
         run: |
-          if [ -d "android" ]; then
-            cd android
-            ./gradlew assembleDebug --no-daemon
-          else
-            ./gradlew assembleDebug --no-daemon
-          fi
+          chmod +x android/gradlew || true
+          cd android
+          ./gradlew assembleDebug --no-daemon
 
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: |
-            android/app/build/outputs/apk/debug/*.apk
-            app/build/outputs/apk/debug/*.apk
+          path: android/app/build/outputs/apk/debug/*.apk
