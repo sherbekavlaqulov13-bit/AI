@@ -161,7 +161,7 @@ function fallbackRule(input) {
         response = state ? "Fonar yoqildi" : "Fonar o'chirildi";
     }
 
-    if (text.includes("uyga") || text.includes("bosh sahifa") || text.includes("home")) {
+    if (text.includes("uyga") || text.includes("bosh sahifa") || text.includes("bosh ekran") || text.includes("home")) {
         plan.push({ tool: "click_key", parameters: { key: "home" } });
         response = "Bosh ekranga qaytildi";
     } else if (text.includes("orqaga") || text.includes("back")) {
