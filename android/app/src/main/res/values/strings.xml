@@ -1,4 +1,3 @@
 <resources>
     <string name="app_name">OvozAI</string>
-    <string name="accessibility_service_desc">OvozAI ilovalarni ochish, tugmalarni bosish va tizimni ovoz orqali boshqarish xizmati.</string>
 </resources>

@@ -12,7 +12,7 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <!-- Title Header -->
+        <!-- Header -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -25,11 +25,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="100% Bepul, o'zbek tilida ovoz orqali telefonni boshqarish"
+            android:text="100% Bepul, o'zbek tilida ovozli boshqaruv"
             android:textColor="@color/teal_accent"
             android:textSize="14sp" />
 
-        <!-- 1. Ilovalar ustidan nazorat va ekranni boshqarish -->
+        <!-- 1. Boshqa ilovalar ustida ko'rsatish (Overlay) -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -47,57 +47,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="1. Ilovalar ustidan nazorat (Tugmalarni bosish va yozish)"
-                    android:textColor="@color/white"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvAccessibilityStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Holati: Ruxsat berilmagan ❌"
-                    android:textColor="@color/red_inactive"
-                    android:textSize="13sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="Ilovalarni ochish, tugmalarni bosish va matn yozish uchun zarur."
-                    android:textColor="@color/text_muted"
-                    android:textSize="12sp" />
-
-                <Button
-                    android:id="@+id/btnGrantAccessibility"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="Ilovalarni boshqarishga ruxsat berish"
-                    android:textAllCaps="false" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- 2. Boshqa ilovalar ustida ko'rinish (Overlay) -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            app:cardBackgroundColor="@color/card_dark"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="4dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="2. Suzuvchi tugma (Boshqa ilovalar ustida ko'rsatish)"
+                    android:text="1. Suzuvchi tugma (Boshqa ilovalar ustida ko'rsatish)"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -115,7 +65,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="Har qanday ilovada turganda ekranda ovozli tugmacha turishi uchun kerak."
+                    android:text="Har qanday ilovada yoki ekranda turganda ovozli tugma doim ko'rinib turishi uchun zarur."
                     android:textColor="@color/text_muted"
                     android:textSize="12sp" />
 
@@ -129,7 +79,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- 3. Xabarlarni o'qish (Notification Listener) -->
+        <!-- 2. Xabarlarni o'qish (Notification Listener) -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -147,7 +97,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="3. Xabarlarni o'qish (Telegram, WhatsApp, SMS)"
+                    android:text="2. Xabarlarni o'qish (Telegram, WhatsApp, SMS)"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -165,7 +115,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="Kelgan xabarlarni ovozli o'qib berish va ovoz orqali javob qaytarish uchun."
+                    android:text="Kelgan xabarlarni ovozli o'qib berish va ovoz orqali tezkor javob qaytarish uchun."
                     android:textColor="@color/text_muted"
                     android:textSize="12sp" />
 
@@ -179,7 +129,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- 4. Mikrofon, Fonar/Kamera va Qo'ng'iroq ruxsati -->
+        <!-- 3. Qurilma ruxsatlari: Ovoz, Kamera/Fonar va Telefon qilish -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -197,7 +147,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="4. Ovoz, Fonar/Kamera va Telefon qilish"
+                    android:text="3. Mikrofon, Kamera/Fonar va Qo'ng'iroq"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -215,7 +165,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="Ovozni eshitish, fonar yoqish, rasmga olish va qo'ng'iroq qilish uchun."
+                    android:text="Ovozingizni eshitish, fonarni yoqish, rasmga olish va telefon qilish uchun."
                     android:textColor="@color/text_muted"
                     android:textSize="12sp" />
 
@@ -224,24 +174,24 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Ovoz, Kamera va Qo'ng'iroqqa ruxsat berish"
+                    android:text="Ruxsat berish"
                     android:textAllCaps="false" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Start/Stop Floating Assistant -->
+        <!-- Ishga Tushirish Tugmasi -->
         <Button
             android:id="@+id/btnToggleFloatingAssistant"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="24dp"
             android:backgroundTint="@color/green_active"
             android:text="🚀 Ovozli Yordamchini Ishga Tushirish"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <!-- Live Status Display -->
+        <!-- Holat -->
         <TextView
             android:id="@+id/tvLiveLog"
             android:layout_width="match_parent"
@@ -249,7 +199,7 @@
             android:layout_marginTop="16dp"
             android:background="@color/card_dark"
             android:padding="12dp"
-            android:text="Tizim 100% bepul. Kerakli ruxsatlarni berib, ishga tushirish tugmasini bosing."
+            android:text="Kerakli ruxsatlarni berib, ishga tushirish tugmasini bosing."
             android:textColor="@color/teal_accent"
             android:textSize="13sp" />
 

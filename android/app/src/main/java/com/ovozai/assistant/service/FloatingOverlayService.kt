@@ -42,7 +42,7 @@ class FloatingOverlayService : Service() {
     private var speechCard: LinearLayout? = null
     private var ivMicIcon: ImageView? = null
 
-    // Suhbat kontekstini eslab qolish (masalan: xabarga javob yozish jarayoni)
+    // Suhbat kontekstini eslab qolish (xabarga javob yozish jarayoni)
     private var conversationContext: String = ""
 
     companion object {
@@ -179,20 +179,17 @@ class FloatingOverlayService : Service() {
         tvAiResponse?.text = "AI o'ylamoqda..."
 
         scope.launch {
-            val visibleScreenText = OvozAccessibilityService.instance?.getVisibleScreenText() ?: ""
             val incomingMessagesSummary = OvozNotificationListenerService.getUnreadSummary()
 
             // AI orqali buyruq va suhbatni tahlil qilish
             val aiResult = geminiBrain.analyzeIntent(
                 userSpeech = userSpeech,
-                visibleScreenText = visibleScreenText,
                 incomingMessagesContext = incomingMessagesSummary,
                 lastTurnContext = conversationContext
             )
 
             tvAiResponse?.text = aiResult.voiceResponse
 
-            // Agar AI foydalanuvchidan javob so'ragan bo'lsa (masalan "yozib yuboraymi?"), kontekstni saqlaymiz
             if (aiResult.voiceResponse.contains("yozib yuboraymi") || aiResult.voiceResponse.contains("javob")) {
                 conversationContext = "xabarlar: oxirgi kelgan xabarga javob yozish jarayoni"
             } else {
@@ -203,7 +200,6 @@ class FloatingOverlayService : Service() {
             val shouldListenAgain = aiResult.voiceResponse.contains("yozib yuboraymi")
             textToSpeech?.speak(aiResult.voiceResponse) {
                 if (shouldListenAgain) {
-                    // Agar AI savol bergan bo'lsa, foydalanuvchini darhol yana eshitadi
                     scope.launch {
                         delay(500)
                         triggerListening()

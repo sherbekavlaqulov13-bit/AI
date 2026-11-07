@@ -2,15 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Tarmoq va Internet (TTS va audio dvigatel uchun) -->
+    <!-- Tarmoq va Internet -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!-- Ovoz va Mikrofon (Ovozli buyruqlarni eshitish uchun) -->
+    <!-- Ovoz va Mikrofon -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
-    <!-- Har doim boshqa ilovalar ustidan ko'rinish (Suzuvchi mikrofon tugmachasi uchun) -->
+    <!-- Boshqa ilovalar ustida ko'rsatish (Suzuvchi mikrofon tugmachasi uchun) -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- Fonda o'chmasdan ishlash -->
@@ -18,15 +18,15 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <!-- Telefondagi barcha o'rnatilgan ilovalarni ko'rish va ochish uchun -->
+    <!-- Telefondagi barcha o'rnatilgan ilovalarni ko'rish va ochish -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
 
-    <!-- Kamera va Fonar (Chiroqni yoqish/o'chirish va rasmga olish uchun) -->
+    <!-- Kamera va Fonar (Chiroq yoqish va rasmga olish) -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
 
-    <!-- Telefon qo'ng'iroqlari (Ovozli buyruq bilan telefon qilish uchun) -->
+    <!-- Telefon qo'ng'iroqlari va Kontaktlar -->
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
@@ -49,19 +49,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- Ekranni boshqaruvchi xizmat -->
-        <service
-            android:name=".service.OvozAccessibilityService"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/accessibility_service_config" />
-        </service>
 
         <!-- Kelgan xabarlarni o'qish va ovozli javob berish xizmati -->
         <service

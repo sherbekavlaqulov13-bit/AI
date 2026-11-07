@@ -25,7 +25,7 @@ class DeviceActionController(private val context: Context) {
                     success
                 }
 
-                // 2. Yangi kelgan xabarlarga javob yozish
+                // 2. Yangi kelgan xabarlarga javob yozish (Notification RemoteInput orqali)
                 "reply_message" -> {
                     val replyText = step.parameters["text"]?.toString() ?: ""
                     val sender = step.parameters["sender"]?.toString() ?: ""
@@ -36,62 +36,40 @@ class DeviceActionController(private val context: Context) {
                     }
                 }
 
-                // 3. Ilovada avtonom xabar yuborish (Telegram, WhatsApp va h.k.)
+                // 3. Ilovani ochish va yozish uchun yo'naltirish
                 "send_app_message" -> {
                     val appName = step.parameters["app_name"]?.toString() ?: "Telegram"
-                    val recipient = step.parameters["recipient"]?.toString() ?: ""
-                    val text = step.parameters["text"]?.toString() ?: ""
-                    appLauncher.launchApp(appName)
-                    OvozAccessibilityService.instance?.autonomousSendMessage(recipient, text) {}
-                    true
+                    val (success, _) = appLauncher.launchApp(appName)
+                    success
                 }
 
-                // 4. Ekrandagi tugmani bosish
-                "click_text" -> {
-                    val text = step.parameters["text"]?.toString() ?: ""
-                    OvozAccessibilityService.instance?.clickByText(text) ?: false
-                }
-
-                // 5. Matn yozish
-                "type_text" -> {
-                    val text = step.parameters["text"]?.toString() ?: ""
-                    OvozAccessibilityService.instance?.inputText(text) ?: false
-                }
-
-                // 6. Ekranni aylantirish (scroll)
-                "scroll" -> {
-                    val dir = step.parameters["direction"]?.toString() ?: "down"
-                    OvozAccessibilityService.instance?.scrollScreen(dir == "down") ?: false
-                }
-
-                // 7. Global navigatsiya (Bosh ekran, Orqaga, Ochiq ilovalar)
-                "global_action" -> {
-                    val action = step.parameters["action"]?.toString() ?: ""
-                    OvozAccessibilityService.instance?.executeGlobal(action) ?: false
-                }
-
-                // 8. Ovoz balandligini sozlash
+                // 4. Ovoz balandligini sozlash
                 "set_volume" -> {
                     val percent = (step.parameters["percent"] as? Number)?.toInt() ?: 50
                     setVolume(percent)
                 }
 
-                // 9. Fonar / Chiroq
+                // 5. Fonar / Chiroq yoqish va o'chirish
                 "toggle_setting" -> {
                     val setting = step.parameters["setting"]?.toString() ?: ""
                     val state = (step.parameters["state"] as? Boolean) ?: true
                     toggleSetting(setting, state)
                 }
 
-                // 10. Telefon qilish
+                // 6. Telefon qilish
                 "make_call" -> {
                     val contactOrNumber = step.parameters["contact_or_number"]?.toString() ?: ""
                     makeCall(contactOrNumber)
                 }
 
-                // 11. Kamerani ochish yoki rasmga olish rejimiga o'tish
+                // 7. Kamerani ochish va rasmga olish rejimiga o'tish
                 "open_camera", "take_photo" -> {
                     openCamera()
+                }
+
+                // 8. Bosh ekranga qaytish
+                "home" -> {
+                    goHome()
                 }
 
                 else -> false
@@ -135,7 +113,6 @@ class DeviceActionController(private val context: Context) {
             context.startActivity(intent)
             true
         } catch (e: Exception) {
-            // Agar CALL_PHONE ruxsati berilmagan bo'lsa, DIAL oynasini ochadi
             try {
                 val dialIntent = Intent(Intent.ACTION_DIAL).apply {
                     data = Uri.parse("tel:$numberOrContact")
@@ -159,6 +136,19 @@ class DeviceActionController(private val context: Context) {
         } catch (e: Exception) {
             val (ok, _) = appLauncher.launchApp("kamera")
             ok
+        }
+    }
+
+    private fun goHome(): Boolean {
+        return try {
+            val intent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+            true
+        } catch (e: Exception) {
+            false
         }
     }
 }
