@@ -36,11 +36,42 @@ class DeviceActionController(private val context: Context) {
                     }
                 }
 
-                // 3. Ilovani ochish va yozish uchun yo'naltirish
+                // 3. Ilovada xabar yuborish / Chat ochish
                 "send_app_message" -> {
                     val appName = step.parameters["app_name"]?.toString() ?: "Telegram"
-                    val (success, _) = appLauncher.launchApp(appName)
-                    success
+                    val recipient = step.parameters["recipient"]?.toString() ?: ""
+                    val text = step.parameters["text"]?.toString() ?: ""
+
+                    // Agar messenjer Telegram bo'lsa va kontakt berilgan bo'lsa, chat ochishga harakat qiladi
+                    if (appName.equals("Telegram", ignoreCase = true) && recipient.isNotBlank() && recipient != "Kontakt") {
+                        try {
+                            val tgIntent = Intent(Intent.ACTION_VIEW, Uri.parse("tg://resolve?domain=$recipient")).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            context.startActivity(tgIntent)
+                            true
+                        } catch (e: Exception) {
+                            val (success, _) = appLauncher.launchApp(appName)
+                            success
+                        }
+                    } else if (appName.equals("WhatsApp", ignoreCase = true) && text.isNotBlank()) {
+                        try {
+                            val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_TEXT, text)
+                                `package` = "com.whatsapp"
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            context.startActivity(sendIntent)
+                            true
+                        } catch (e: Exception) {
+                            val (success, _) = appLauncher.launchApp("WhatsApp")
+                            success
+                        }
+                    } else {
+                        val (success, _) = appLauncher.launchApp(appName)
+                        success
+                    }
                 }
 
                 // 4. Ovoz balandligini sozlash

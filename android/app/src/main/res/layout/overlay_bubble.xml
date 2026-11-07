@@ -6,15 +6,16 @@
     android:gravity="center"
     android:orientation="vertical">
 
-    <!-- AI Voice Response and Speech Text Card -->
+    <!-- Kichik, chiroyli va ixcham suhbat kartasi (faqat gapirganda yoki eshitganda chiqadi) -->
     <LinearLayout
         android:id="@+id/speechCard"
-        android:layout_width="260dp"
+        android:layout_width="220dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:background="#DD1E1E1E"
+        android:layout_marginBottom="6dp"
+        android:background="@drawable/chat_bubble_bg"
         android:orientation="vertical"
-        android:padding="12dp"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="8dp"
         android:visibility="gone">
 
         <TextView
@@ -22,33 +23,33 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Eshitmoqdaman..."
-            android:textColor="#03DAC5"
-            android:textSize="13sp"
+            android:textColor="#00E676"
+            android:textSize="12sp"
             android:textStyle="italic" />
 
         <TextView
             android:id="@+id/tvAiResponse"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="3dp"
             android:text=""
             android:textColor="#FFFFFF"
-            android:textSize="14sp" />
+            android:textSize="13sp" />
     </LinearLayout>
 
-    <!-- Floating Mic Button -->
+    <!-- Kichik, ixcham va noqulaylik tug'dirmaydigan suzuvchi mikrofon tugmachasi (48dp) -->
     <FrameLayout
         android:id="@+id/bubbleLayout"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:background="@drawable/circle_button_bg"
         android:clickable="true"
         android:focusable="true">
 
         <ImageView
             android:id="@+id/ivMicIcon"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_gravity="center"
             android:src="@android:drawable/ic_btn_speak_now" />
     </FrameLayout>

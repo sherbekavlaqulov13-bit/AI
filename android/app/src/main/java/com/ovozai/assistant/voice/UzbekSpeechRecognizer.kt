@@ -14,76 +14,99 @@ class UzbekSpeechRecognizer(
     private val onStatus: (String) -> Unit
 ) {
     private var speechRecognizer: SpeechRecognizer? = null
+    private var isListening = false
 
     fun startListening() {
         if (!SpeechRecognizer.isRecognitionAvailable(context)) {
-            onStatus("Qurilmada SpeechRecognizer mavjud emas")
+            onStatus("Nutqni aniqlash mavjud emas")
             return
         }
 
         stopListening()
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
-            setRecognitionListener(object : RecognitionListener {
-                override fun onReadyForSpeech(params: Bundle?) {
-                    onStatus("Eshitmoqdaman...")
-                }
-
-                override fun onBeginningOfSpeech() {
-                    onStatus("Gapirilmoqda...")
-                }
-
-                override fun onRmsChanged(rmsdB: Float) {}
-
-                override fun onBufferReceived(buffer: ByteArray?) {}
-
-                override fun onEndOfSpeech() {
-                    onStatus("Tahlil qilinmoqda...")
-                }
-
-                override fun onError(error: Int) {
-                    val msg = when (error) {
-                        SpeechRecognizer.ERROR_NO_MATCH -> "Ovoz tanilmadi"
-                        SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Ovoz eshitilmadi"
-                        SpeechRecognizer.ERROR_AUDIO -> "Audio yozishda xato"
-                        else -> "Xatolik: $error"
-                    }
-                    onStatus(msg)
-                }
-
-                override fun onResults(results: Bundle?) {
-                    val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                    if (!matches.isNullOrEmpty()) {
-                        val text = matches[0]
-                        onResult(text)
-                    } else {
-                        onStatus("Ovoz aniqlanmadi")
-                    }
-                }
-
-                override fun onPartialResults(partialResults: Bundle?) {}
-
-                override fun onEvent(eventType: Int, params: Bundle?) {}
-            })
-        }
-
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "uz-UZ")
-            putExtra("android.speech.extra.EXTRA_ADDITIONAL_LANGUAGES", arrayOf("uz-UZ", "uz", "en-US", "ru-RU"))
-            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
-        }
 
         try {
+            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
+                setRecognitionListener(object : RecognitionListener {
+                    override fun onReadyForSpeech(params: Bundle?) {
+                        isListening = true
+                        onStatus("Sizni eshitmoqdaman...")
+                    }
+
+                    override fun onBeginningOfSpeech() {
+                        onStatus("Gapirilmoqda...")
+                    }
+
+                    override fun onRmsChanged(rmsdB: Float) {}
+
+                    override fun onBufferReceived(buffer: ByteArray?) {}
+
+                    override fun onEndOfSpeech() {
+                        onStatus("Tushunmoqdaman...")
+                    }
+
+                    override fun onError(error: Int) {
+                        isListening = false
+                        val msg = when (error) {
+                            SpeechRecognizer.ERROR_NO_MATCH -> "Qaytadan ayting..."
+                            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Eshitmoy qoldim, bosing"
+                            SpeechRecognizer.ERROR_AUDIO -> "Mikrofon xatosi"
+                            SpeechRecognizer.ERROR_NETWORK, SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Internetni tekshiring"
+                            else -> "Qaytadan bosing"
+                        }
+                        Log.d("OvozAI", "Speech error code: $error, msg: $msg")
+                        onStatus(msg)
+                    }
+
+                    override fun onResults(results: Bundle?) {
+                        isListening = false
+                        val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        if (!matches.isNullOrEmpty()) {
+                            val text = matches[0]
+                            Log.d("OvozAI", "Ovoz aniqlandi: $text")
+                            onResult(text)
+                        } else {
+                            onStatus("Ovoz aniqlanmadi")
+                        }
+                    }
+
+                    override fun onPartialResults(partialResults: Bundle?) {
+                        val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        if (!matches.isNullOrEmpty()) {
+                            onStatus(matches[0])
+                        }
+                    }
+
+                    override fun onEvent(eventType: Int, params: Bundle?) {}
+                })
+            }
+
+            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE, "uz-UZ")
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "uz-UZ")
+                putExtra("android.speech.extra.EXTRA_ADDITIONAL_LANGUAGES", arrayOf("uz-UZ", "uz", "ru-RU", "en-US"))
+                putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.packageName)
+                putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+                putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
+            }
+
             speechRecognizer?.startListening(intent)
         } catch (e: Exception) {
-            Log.e("OvozAI", "SpeechRecognizer xatosi: ${e.message}")
+            Log.e("OvozAI", "SpeechRecognizer start listening xatosi: ${e.message}")
             onStatus("Xatolik: ${e.message}")
         }
     }
 
     fun stopListening() {
-        speechRecognizer?.stopListening()
-        speechRecognizer?.destroy()
-        speechRecognizer = null
+        try {
+            isListening = false
+            speechRecognizer?.stopListening()
+            speechRecognizer?.cancel()
+            speechRecognizer?.destroy()
+        } catch (e: Exception) {
+            Log.e("OvozAI", "SpeechRecognizer stop xatosi: ${e.message}")
+        } finally {
+            speechRecognizer = null
+        }
     }
 }

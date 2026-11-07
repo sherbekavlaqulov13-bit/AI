@@ -5,7 +5,11 @@ import java.util.Locale
 class OnDeviceUzbekEngine {
 
     /**
-     * Internet yoki API kalitisiz, 100% bepul va avtonom ishlovchi O'zbek tili sun'iy idrok dvigateli.
+     * O'zbek tili sun'iy idrok dvigateli:
+     * - Chat va xabarlarni tushunish
+     * - Aloqa va kontaktlar
+     * - Telefondagi barcha ilovalarni aniqlash
+     * - Fonar, kamera, qo'ng'iroq va tizim buyruqlari
      */
     fun process(
         input: String,
@@ -16,7 +20,7 @@ class OnDeviceUzbekEngine {
         val text = normalize(raw)
         val plan = mutableListOf<ActionStep>()
 
-        // 1. Yangi xabarlar bormi deb so'ralganda / xabarlarni o'qish
+        // 1. Yangi xabarlarni o'qish ("kimdir yozdimi", "xabarlar bormi", "xabarlarni o'qi")
         if (isAskingForMessages(text)) {
             val response = if (incomingMessagesContext.isNotBlank()) {
                 incomingMessagesContext
@@ -26,80 +30,75 @@ class OnDeviceUzbekEngine {
             return AiResponse(voiceResponse = response, executionPlan = emptyList())
         }
 
-        // 2. Avvalgi savolga javoban xabar yozish ("Ha, yetib bordim deb yoz")
+        // 2. Avvalgi xabarga javob yozish ("Ha, yetib bordim deb yoz", "Ha", "ha javob yoz")
         if (lastTurnContext.contains("xabar") && (text.startsWith("ha") || text.contains("deb yoz") || text.contains("yoz"))) {
             val replyText = extractReplyMessage(text)
             plan.add(ActionStep("reply_message", mapOf("text" to replyText)))
             return AiResponse(
-                voiceResponse = "Xabar yuborildi: \"$replyText\"",
+                voiceResponse = "Xabar yuborildi: $replyText",
                 executionPlan = plan
             )
         }
 
-        // 3. To'g'ridan-to'g'ri biror ilovada xabar yozish (masalan: "Telegramda Akmalga salom deb yoz")
-        if ((text.contains("yoz") || text.contains("yubor")) && (text.contains("telegram") || text.contains("whatsapp") || text.contains("sms") || text.contains("ga "))) {
-            val app = when {
-                text.contains("whatsapp") -> "WhatsApp"
-                text.contains("sms") -> "Messages"
-                else -> "Telegram"
-            }
+        // 3. Kimgadir xabar yozish / Chat ochish (Telegram, WhatsApp, SMS va barcha messenjerlar)
+        // Masalan: "Telegramda Akmalga salom deb yoz", "Akmalga xabar yoz", "Chatni och", "Telegramni ochib Akmalga yoz"
+        if (isChatOrMessageCommand(text)) {
+            val targetApp = detectMessagingApp(text)
+            val recipient = extractRecipient(text)
+            val messageText = extractMessageBody(text)
 
-            var recipient = "Kontakt"
-            val words = text.split(" ")
-            for (w in words) {
-                if (w.endsWith("ga") && !w.startsWith("tele") && !w.startsWith("what")) {
-                    recipient = w.removeSuffix("ga").replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-                }
-            }
-
-            var messageContent = "Salom"
-            if (text.contains("deb")) {
-                val parts = text.split("deb")
-                messageContent = parts[0].split(" ").takeLast(4).joinToString(" ").trim()
-            } else if (text.contains("yoz")) {
-                val parts = text.split("yoz")
-                messageContent = parts[0].split(" ").takeLast(3).joinToString(" ").trim()
-            }
-
-            plan.add(ActionStep("send_app_message", mapOf("app_name" to app, "recipient" to recipient, "text" to messageContent)))
-            return AiResponse(
-                voiceResponse = "$app orqali $recipient ga \"$messageContent\" xabari yuborilmoqda.",
-                executionPlan = plan
+            plan.add(
+                ActionStep(
+                    tool = "send_app_message",
+                    parameters = mapOf(
+                        "app_name" to targetApp,
+                        "recipient" to recipient,
+                        "text" to messageText
+                    )
+                )
             )
+
+            val voiceRes = if (recipient.isNotBlank() && recipient != "Kontakt") {
+                "$targetApp ochilmoqda. $recipient ga xabar yuborishga tayyor."
+            } else {
+                "$targetApp chatlari ochilmoqda."
+            }
+
+            return AiResponse(voiceResponse = voiceRes, executionPlan = plan)
         }
 
-        // 4. Salomatlik va erkin suhbat (Small Talk)
+        // 4. Salomatlik va erkin suhbat (AI muloqoti)
         if (isGreeting(text)) {
             val greetings = listOf(
-                "Assalomu alaykum! Telefoningizni boshqarishga tayyorman, qanday buyruq bajaramiz?",
-                "Vaalaykum assalom! Xizmatdaman, nimani ochib beray yoki qanday yordam bera olaman?",
-                "Salom! Qanday buyruq bajaramiz?"
+                "Assalomu alaykum! Xizmatdaman, qanday buyruq bajaramiz?",
+                "Vaalaykum assalom! Qanday yordam bera olaman?",
+                "Salom! Telefoningizda qaysi ilovani ochaylik yoki kimgadir yozaylikmi?"
             )
             return AiResponse(voiceResponse = greetings.random(), executionPlan = emptyList())
         }
 
-        if (text.contains("qalaysan") || text.contains("ishlar qalay") || text.contains("qandaysan") || text.contains("yaxshimisiz")) {
+        if (text.contains("qalaysan") || text.contains("ishlar qalay") || text.contains("qandaysan") || text.contains("nima gap")) {
             return AiResponse(
-                voiceResponse = "Rahmat, a'loman! Sizga xizmat qilishdan xursandman. Telefoningizda biror amal bajaramizmi?",
+                voiceResponse = "Rahmat, hammasi a'lo! Sizga xizmat qilishdan mamnunman. Buyrug'ingiz bormi?",
                 executionPlan = emptyList()
             )
         }
 
-        if (text.contains("kim san") || text.contains("kimsan") || text.contains("nima bu")) {
+        if (text.contains("kim san") || text.contains("kimsan") || text.contains("isming nima")) {
             return AiResponse(
-                voiceResponse = "Men OvozAI — telefoningizni to'liq o'zbek tilida ovoz orqali boshqaruvchi bepul aqlli yordamchingizman.",
+                voiceResponse = "Men OvozAI — telefoningizni to'liq o'zbek tilida ovoz orqali boshqaruvchi aqlli yordamchingizman.",
                 executionPlan = emptyList()
             )
         }
 
-        if (text.contains("rahmat") || text.contains("tashakkur") || text.contains("barakalla")) {
+        if (text.contains("rahmat") || text.contains("tashakkur") || text.contains("barakalla") || text.contains("gap yoq")) {
             return AiResponse(
-                voiceResponse = "Arzimaydi, doim xizmatingizdaman!",
+                voiceResponse = "Arzimaydi, doimo xizmatingizdaman!",
                 executionPlan = emptyList()
             )
         }
 
-        // 5. Fonar / Chiroq boshqaruvi
+        // 5. Fonar / Chiroq
         if (text.contains("fonar") || text.contains("chiroq") || text.contains("fonarni") || text.contains("chiroqni")) {
             val state = !(text.contains("o'chir") || text.contains("yop") || text.contains("ochir"))
             plan.add(ActionStep("toggle_setting", mapOf("setting" to "flashlight", "state" to state)))
@@ -110,13 +109,13 @@ class OnDeviceUzbekEngine {
         }
 
         // 6. Rasmga olish / Kamera
-        if (text.contains("rasmga ol") || text.contains("rasm ol") || text.contains("foto ol") || text.contains("suratga ol") || text.contains("kamerani och")) {
+        if (text.contains("rasmga ol") || text.contains("rasm ol") || text.contains("foto ol") || text.contains("suratga ol") || text.contains("kamera")) {
             plan.add(ActionStep("open_camera", emptyMap()))
             return AiResponse(voiceResponse = "Kamera ochilmoqda, rasmga olishga tayyor.", executionPlan = plan)
         }
 
-        // 7. Qo'ng'iroq qilish / Telefon qilish
-        if (text.contains("qo'ng'iroq") || text.contains("qongiroq") || text.contains("telefon qil") || text.contains("tel qil")) {
+        // 7. Qo'ng'iroq qilish / Telefon qilish ("Ali akaga telefon qil", "998901234567 ga tel qil")
+        if (text.contains("qo'ng'iroq") || text.contains("qongiroq") || text.contains("telefon qil") || text.contains("tel qil") || text.contains("go'shakni ko'tar")) {
             val contact = extractContact(text)
             plan.add(ActionStep("make_call", mapOf("contact_or_number" to contact)))
             return AiResponse(voiceResponse = "$contact ga qo'ng'iroq qilinmoqda.", executionPlan = plan)
@@ -144,57 +143,22 @@ class OnDeviceUzbekEngine {
             }
         }
 
-        // 9. Tizim navigatsiyasi (Home, Back, Recents)
+        // 9. Tizim navigatsiyasi (Bosh ekran)
         if (text.contains("bosh sahifa") || text.contains("bosh ekran") || text.contains("uyga") || text.contains("home")) {
-            plan.add(ActionStep("global_action", mapOf("action" to "home")))
+            plan.add(ActionStep("home", emptyMap()))
             return AiResponse(voiceResponse = "Bosh ekranga qaytildi.", executionPlan = plan)
         }
 
-        if (text.contains("orqaga") || text.contains("back")) {
-            plan.add(ActionStep("global_action", mapOf("action" to "back")))
-            return AiResponse(voiceResponse = "Orqaga qaytildi.", executionPlan = plan)
-        }
-
-        if (text.contains("skrinshot") || text.contains("ekran rasmi") || text.contains("screenshot") || text.contains("ss ol")) {
-            plan.add(ActionStep("global_action", mapOf("action" to "screenshot")))
-            return AiResponse(voiceResponse = "Ekran rasmi olindi.", executionPlan = plan)
-        }
-
-        if (text.contains("ochiq ilova") || text.contains("so'nggi ilova") || text.contains("recents")) {
-            plan.add(ActionStep("global_action", mapOf("action" to "recents")))
-            return AiResponse(voiceResponse = "Ochiq ilovalar ko'rsatilmoqda.", executionPlan = plan)
-        }
-
-        // 10. Skroll (aylantirish)
-        if (text.contains("pastga") || text.contains("pastga tush") || text.contains("quyiga")) {
-            plan.add(ActionStep("scroll", mapOf("direction" to "down")))
-            return AiResponse(voiceResponse = "Pastga aylantirildi.", executionPlan = plan)
-        }
-
-        if (text.contains("tepaga") || text.contains("yuqoriga") || text.contains("tepaga chiq")) {
-            plan.add(ActionStep("scroll", mapOf("direction" to "up")))
-            return AiResponse(voiceResponse = "Tepaga aylantirildi.", executionPlan = plan)
-        }
-
-        // 11. Ekrandagi tugmani bosish
-        if (text.contains("bos") || text.contains("bosing") || text.contains("tugmasini bos")) {
-            val btnTarget = text.replace("tugmasini", "").replace("tugmani", "").replace("bos", "").replace("bosing", "").trim()
-            if (btnTarget.isNotBlank()) {
-                plan.add(ActionStep("click_text", mapOf("text" to btnTarget)))
-                return AiResponse(voiceResponse = "\"$btnTarget\" bosilmoqda.", executionPlan = plan)
-            }
-        }
-
-        // 12. Telefondagi hamma ilovalarni ochish
+        // 10. Telefondagi ilovalarni ochish ("YouTube", "Telegram", "Instagram", "Payme", "Click", "Sozlamalar", "Kalkulyator", ...)
         val appQuery = extractAppQuery(text)
         if (appQuery.isNotBlank()) {
             plan.add(ActionStep("open_app", mapOf("app_name" to appQuery)))
             return AiResponse(voiceResponse = "$appQuery ochilmoqda.", executionPlan = plan)
         }
 
-        // 13. Erkin / umumiy javob
+        // 11. Tushunarsiz yoki umumiy gap bo'lsa
         return AiResponse(
-            voiceResponse = "Buyrug'ingizni tushundim. Telefoningizda bajarilmoqda.",
+            voiceResponse = "Buyrug'ingiz qabul qilindi. Bajaryapman.",
             executionPlan = plan
         )
     }
@@ -202,6 +166,42 @@ class OnDeviceUzbekEngine {
     private fun isAskingForMessages(t: String): Boolean {
         return (t.contains("xabar") || t.contains("sms") || t.contains("kim yozdi") || t.contains("bildirishnoma")) &&
                !t.contains("yoz ") && !t.contains("yubor")
+    }
+
+    private fun isChatOrMessageCommand(t: String): Boolean {
+        return (t.contains("yoz") || t.contains("yubor") || t.contains("chat") || t.contains("sms yoz")) &&
+               (t.contains("telegram") || t.contains("whatsapp") || t.contains("sms") || t.contains("ga ") || t.contains("kimgadir"))
+    }
+
+    private fun detectMessagingApp(t: String): String {
+        return when {
+            t.contains("whatsapp") -> "WhatsApp"
+            t.contains("sms") || t.contains("xabar") -> "Xabarlar"
+            t.contains("instagram") -> "Instagram"
+            else -> "Telegram"
+        }
+    }
+
+    private fun extractRecipient(t: String): String {
+        val words = t.split(" ")
+        for (w in words) {
+            if (w.endsWith("ga") && !w.startsWith("tele") && !w.startsWith("what") && !w.startsWith("insta") && !w.startsWith("qo'n")) {
+                return w.removeSuffix("ga").replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+            }
+        }
+        return "Kontakt"
+    }
+
+    private fun extractMessageBody(t: String): String {
+        if (t.contains("deb")) {
+            val parts = t.split("deb")
+            return parts[0].split(" ").takeLast(4).joinToString(" ").trim()
+        }
+        if (t.contains("yoz")) {
+            val parts = t.split("yoz")
+            return parts[0].split(" ").takeLast(3).joinToString(" ").trim()
+        }
+        return "Salom"
     }
 
     private fun isGreeting(t: String): Boolean {
@@ -219,29 +219,32 @@ class OnDeviceUzbekEngine {
     }
 
     private fun extractAppQuery(t: String): String {
-        if (t.contains("och") || t.contains("kir") || t.contains("boshla") || t.contains("yoq")) {
-            var q = t
-            q = q.replace("och", "")
-                .replace("kir", "")
-                .replace("ilovani", "")
-                .replace("dasturni", "")
-                .replace("boshla", "")
-                .replace("yoq", "")
-                .replace("ni", "")
-                .replace("ga", "")
-                .trim()
-            return q
+        var q = t
+        val triggers = listOf("och", "kir", "boshla", "yoq", "ishga tushir", "app", "ilova")
+        for (tr in triggers) {
+            q = q.replace(tr, "")
         }
-        return ""
+        q = q.replace("ilovani", "")
+            .replace("dasturni", "")
+            .replace("ni", "")
+            .replace("ga", "")
+            .replace("chiq", "")
+            .trim()
+
+        return q
     }
 
     private fun extractContact(t: String): String {
         val words = t.split(" ")
         for (w in words) {
-            if (w.endsWith("ga") && !w.startsWith("qo'n")) {
+            if (w.endsWith("ga") && !w.startsWith("qo'n") && !w.startsWith("tel")) {
                 return w.removeSuffix("ga").replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
             }
         }
+        // Agar raqam bo'lsa
+        val digits = t.filter { it.isDigit() }
+        if (digits.length >= 7) return digits
+
         return "Kontakt"
     }
 
@@ -252,5 +255,5 @@ class OnDeviceUzbekEngine {
             .replace("‘", "'")
             .replace("  ", " ")
             .trim()
-        }
+    }
 }

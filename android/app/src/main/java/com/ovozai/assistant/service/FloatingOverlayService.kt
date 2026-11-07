@@ -42,7 +42,7 @@ class FloatingOverlayService : Service() {
     private var speechCard: LinearLayout? = null
     private var ivMicIcon: ImageView? = null
 
-    // Suhbat kontekstini eslab qolish (xabarga javob yozish jarayoni)
+    // Suhbat xotirasi (Conversation context memory)
     private var conversationContext: String = ""
 
     companion object {
@@ -67,6 +67,9 @@ class FloatingOverlayService : Service() {
             },
             onStatus = { status ->
                 tvUserSpeech?.text = status
+                if (status.contains("Eshit") || status.contains("Gapir")) {
+                    speechCard?.visibility = View.VISIBLE
+                }
             }
         )
 
@@ -114,8 +117,8 @@ class FloatingOverlayService : Service() {
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = 50
-            y = 200
+            x = 30
+            y = 250
         }
 
         tvUserSpeech = overlayView?.findViewById(R.id.tvUserSpeech)
@@ -169,14 +172,14 @@ class FloatingOverlayService : Service() {
 
     private fun triggerListening() {
         speechCard?.visibility = View.VISIBLE
-        tvUserSpeech?.text = "Eshitmoqdaman..."
+        tvUserSpeech?.text = "Sizni eshitmoqdaman..."
         tvAiResponse?.text = ""
         speechRecognizer?.startListening()
     }
 
     private fun onSpeechRecognized(userSpeech: String) {
         tvUserSpeech?.text = "\"$userSpeech\""
-        tvAiResponse?.text = "AI o'ylamoqda..."
+        tvAiResponse?.text = "AI bajaryapti..."
 
         scope.launch {
             val incomingMessagesSummary = OvozNotificationListenerService.getUnreadSummary()
@@ -190,31 +193,32 @@ class FloatingOverlayService : Service() {
 
             tvAiResponse?.text = aiResult.voiceResponse
 
+            // Suhbat xotirasi (Memory context)
             if (aiResult.voiceResponse.contains("yozib yuboraymi") || aiResult.voiceResponse.contains("javob")) {
                 conversationContext = "xabarlar: oxirgi kelgan xabarga javob yozish jarayoni"
             } else {
-                conversationContext = ""
+                conversationContext = userSpeech
             }
 
-            // Ovozli javob berish
+            // Ovozli javob berish (Text-To-Speech)
             val shouldListenAgain = aiResult.voiceResponse.contains("yozib yuboraymi")
             textToSpeech?.speak(aiResult.voiceResponse) {
                 if (shouldListenAgain) {
                     scope.launch {
-                        delay(500)
+                        delay(600)
                         triggerListening()
                     }
                 }
             }
 
-            // Amallarni ketma-ket bajarish
+            // Amallarni birin-ketin bajarish
             for (step in aiResult.executionPlan) {
-                delay(400)
+                delay(300)
                 actionController.executeStep(step)
             }
 
             if (!shouldListenAgain) {
-                delay(4000)
+                delay(3500)
                 speechCard?.visibility = View.GONE
             }
         }
