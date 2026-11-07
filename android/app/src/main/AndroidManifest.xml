@@ -2,39 +2,33 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Tarmoq va Internet -->
+    <!-- Tarmoq va Internet (TTS va audio dvigatel uchun) -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!-- Ovoz va Mikrofon -->
+    <!-- Ovoz va Mikrofon (Ovozli buyruqlarni eshitish uchun) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
-    <!-- Har doim boshqa ilovalar ustidan ko'rinish (Overlay) -->
+    <!-- Har doim boshqa ilovalar ustidan ko'rinish (Suzuvchi mikrofon tugmachasi uchun) -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- Fonda o'chmasdan ishlash -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
-    <!-- Telefondagi barcha o'rnatilgan ilovalarni ko'rish ruxsati (Android 11+) -->
+    <!-- Telefondagi barcha o'rnatilgan ilovalarni ko'rish va ochish uchun -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
 
-    <!-- Qurilma sozlamalari va imkoniyatlari -->
+    <!-- Kamera va Fonar (Chiroqni yoqish/o'chirish va rasmga olish uchun) -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.CALL_PHONE" />
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <uses-permission android:name="android.permission.SEND_SMS" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
+
+    <!-- Telefon qo'ng'iroqlari (Ovozli buyruq bilan telefon qilish uchun) -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
     <application
@@ -46,7 +40,7 @@
         android:theme="@style/Theme.OvozAI"
         tools:targetApi="34">
 
-        <!-- Asosiy sozlash va ruxsatlar oynasi -->
+        <!-- Asosiy boshqaruv oynasi -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -56,7 +50,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Ekranni to'liq boshqaruvchi Maxsus Imkoniyatlar Xizmati (Accessibility) -->
+        <!-- Ekranni boshqaruvchi xizmat -->
         <service
             android:name=".service.OvozAccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
@@ -69,10 +63,10 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
-        <!-- Kelgan xabarlarni (Telegram, SMS va h.k.) o'qish va javob berish xizmati -->
+        <!-- Kelgan xabarlarni o'qish va ovozli javob berish xizmati -->
         <service
             android:name=".service.OvozNotificationListenerService"
-            android:label="OvozAI Bildirishnomalar Xizmati"
+            android:label="OvozAI Xabarlar Xizmati"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
             android:exported="true">
             <intent-filter>
@@ -80,7 +74,7 @@
             </intent-filter>
         </service>
 
-        <!-- Barcha ilovalar ustida turuvchi suzuvchi mikrofon xizmati -->
+        <!-- Suzuvchi mikrofon tugmasi xizmati -->
         <service
             android:name=".service.FloatingOverlayService"
             android:enabled="true"

@@ -57,10 +57,7 @@ class FloatingOverlayService : Service() {
         super.onCreate()
         isRunning = true
         actionController = DeviceActionController(this)
-        geminiBrain = GeminiBrain {
-            val prefs = getSharedPreferences("OvozAI_Prefs", Context.MODE_PRIVATE)
-            prefs.getString("gemini_api_key", "") ?: ""
-        }
+        geminiBrain = GeminiBrain()
 
         textToSpeech = UzbekTextToSpeech(this)
         speechRecognizer = UzbekSpeechRecognizer(

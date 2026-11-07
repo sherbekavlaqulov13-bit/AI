@@ -1,7 +1,6 @@
 package com.ovozai.assistant
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -9,7 +8,6 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -24,13 +22,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvAccessibilityStatus: TextView
     private lateinit var tvOverlayStatus: TextView
     private lateinit var tvNotificationStatus: TextView
-    private lateinit var tvMicStatus: TextView
+    private lateinit var tvDirectPermissionsStatus: TextView
     private lateinit var tvLiveLog: TextView
-    private lateinit var etApiKey: EditText
     private lateinit var btnToggleService: Button
 
     companion object {
-        private const val REQUEST_RECORD_AUDIO = 201
+        private const val REQUEST_DIRECT_PERMISSIONS = 202
+        private val REQUIRED_PERMISSIONS = arrayOf(
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.CAMERA,
+            Manifest.permission.CALL_PHONE,
+            Manifest.permission.READ_CONTACTS
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,33 +43,22 @@ class MainActivity : AppCompatActivity() {
         tvAccessibilityStatus = findViewById(R.id.tvAccessibilityStatus)
         tvOverlayStatus = findViewById(R.id.tvOverlayStatus)
         tvNotificationStatus = findViewById(R.id.tvNotificationStatus)
-        tvMicStatus = findViewById(R.id.tvMicStatus)
+        tvDirectPermissionsStatus = findViewById(R.id.tvDirectPermissionsStatus)
         tvLiveLog = findViewById(R.id.tvLiveLog)
-        etApiKey = findViewById(R.id.etApiKey)
         btnToggleService = findViewById(R.id.btnToggleFloatingAssistant)
 
         val btnGrantAccessibility = findViewById<Button>(R.id.btnGrantAccessibility)
         val btnGrantOverlay = findViewById<Button>(R.id.btnGrantOverlay)
         val btnGrantNotification = findViewById<Button>(R.id.btnGrantNotification)
-        val btnGrantMic = findViewById<Button>(R.id.btnGrantMic)
-        val btnSaveApiKey = findViewById<Button>(R.id.btnSaveApiKey)
+        val btnGrantDirect = findViewById<Button>(R.id.btnGrantDirectPermissions)
 
-        // API kalitni yuklash
-        val prefs = getSharedPreferences("OvozAI_Prefs", Context.MODE_PRIVATE)
-        val savedKey = prefs.getString("gemini_api_key", "") ?: ""
-        etApiKey.setText(savedKey)
-
-        btnSaveApiKey.setOnClickListener {
-            val key = etApiKey.text.toString().trim()
-            prefs.edit().putString("gemini_api_key", key).apply()
-            Toast.makeText(this, "API kaliti saqlandi!", Toast.LENGTH_SHORT).show()
-        }
-
+        // 1. Ilovalar ustidan nazorat (Accessibility)
         btnGrantAccessibility.setOnClickListener {
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
             startActivity(intent)
         }
 
+        // 2. Boshqa ilovalar ustida ko'rinish (Overlay)
         btnGrantOverlay.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val intent = Intent(
@@ -77,16 +69,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // 3. Xabarlarni o'qish (Notification Listener)
         btnGrantNotification.setOnClickListener {
             val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
             startActivity(intent)
         }
 
-        btnGrantMic.setOnClickListener {
+        // 4. Mikrofon, Fonar/Kamera va Telefon qilish
+        btnGrantDirect.setOnClickListener {
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(Manifest.permission.RECORD_AUDIO),
-                REQUEST_RECORD_AUDIO
+                REQUIRED_PERMISSIONS,
+                REQUEST_DIRECT_PERMISSIONS
             )
         }
 
@@ -101,7 +95,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updatePermissionStatuses() {
-        // 1. Accessibility Service
+        // 1. Accessibility Service (Ilovalar ustidan nazorat)
         val isAccessibilityActive = OvozAccessibilityService.isRunning
         if (isAccessibilityActive) {
             tvAccessibilityStatus.text = "Holati: Ruxsat berilgan ✅"
@@ -111,7 +105,7 @@ class MainActivity : AppCompatActivity() {
             tvAccessibilityStatus.setTextColor(ContextCompat.getColor(this, R.color.red_inactive))
         }
 
-        // 2. Overlay
+        // 2. Overlay (Boshqa ilovalar ustida ko'rsatish)
         val canDrawOverlay = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Settings.canDrawOverlays(this)
         } else true
@@ -124,7 +118,7 @@ class MainActivity : AppCompatActivity() {
             tvOverlayStatus.setTextColor(ContextCompat.getColor(this, R.color.red_inactive))
         }
 
-        // 3. Notification Listener
+        // 3. Notification Listener (Xabarlarni o'qish)
         val enabledListeners = NotificationManagerCompat.getEnabledListenerPackages(this)
         val hasNotificationAccess = enabledListeners.contains(packageName)
         if (hasNotificationAccess) {
@@ -135,15 +129,17 @@ class MainActivity : AppCompatActivity() {
             tvNotificationStatus.setTextColor(ContextCompat.getColor(this, R.color.red_inactive))
         }
 
-        // 4. Microphone
-        val micPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-        val hasMic = micPermission == PackageManager.PERMISSION_GRANTED
-        if (hasMic) {
-            tvMicStatus.text = "Holati: Ruxsat berilgan ✅"
-            tvMicStatus.setTextColor(ContextCompat.getColor(this, R.color.green_active))
+        // 4. To'g'ridan-to'g'ri ruxsatlar (Mikrofon, Kamera, Qo'ng'iroq)
+        val allGranted = REQUIRED_PERMISSIONS.all {
+            ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
+        }
+
+        if (allGranted) {
+            tvDirectPermissionsStatus.text = "Holati: Ruxsat berilgan ✅"
+            tvDirectPermissionsStatus.setTextColor(ContextCompat.getColor(this, R.color.green_active))
         } else {
-            tvMicStatus.text = "Holati: Ruxsat berilmagan ❌"
-            tvMicStatus.setTextColor(ContextCompat.getColor(this, R.color.red_inactive))
+            tvDirectPermissionsStatus.text = "Holati: Ruxsat berilmagan ❌"
+            tvDirectPermissionsStatus.setTextColor(ContextCompat.getColor(this, R.color.red_inactive))
         }
 
         // Service holati
@@ -154,10 +150,10 @@ class MainActivity : AppCompatActivity() {
         } else {
             btnToggleService.text = "🚀 Ovozli Yordamchini Ishga Tushirish"
             btnToggleService.backgroundTintList = ContextCompat.getColorStateList(this, R.color.green_active)
-            tvLiveLog.text = if (isAccessibilityActive && canDrawOverlay && hasMic) {
+            tvLiveLog.text = if (isAccessibilityActive && canDrawOverlay && allGranted) {
                 "Barcha ruxsatlar tayyor! Ishga tushirish tugmasini bosing."
             } else {
-                "Iltimos, yuqoridagi qizil ruxsatlarni berib chiqing."
+                "Kerakli ruxsatlarni berib, yordamchini ishga tushiring."
             }
         }
     }
@@ -168,7 +164,7 @@ class MainActivity : AppCompatActivity() {
         } else true
 
         if (!canDrawOverlay) {
-            Toast.makeText(this, "Avval Boshqa ilovalar ustidan ko'rsatish ruxsatini bering!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Avval Boshqa ilovalar ustida ko'rsatish ruxsatini bering!", Toast.LENGTH_LONG).show()
             return
         }
 

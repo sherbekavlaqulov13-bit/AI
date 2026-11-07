@@ -5,7 +5,7 @@ import java.util.Locale
 class OnDeviceUzbekEngine {
 
     /**
-     * Internet yoki API kalitisiz, 100% bepul va avtonom ishlovchi O'zbek tili sun'iy idrok moduli.
+     * Internet yoki API kalitisiz, 100% bepul va avtonom ishlovchi O'zbek tili sun'iy idrok dvigateli.
      */
     fun process(
         input: String,
@@ -16,7 +16,7 @@ class OnDeviceUzbekEngine {
         val text = normalize(raw)
         val plan = mutableListOf<ActionStep>()
 
-        // 1. Yangi xabarlar bormi deb so'ralganda
+        // 1. Yangi xabarlar bormi deb so'ralganda / xabarlarni o'qish
         if (isAskingForMessages(text)) {
             val response = if (incomingMessagesContext.isNotBlank()) {
                 incomingMessagesContext
@@ -26,7 +26,7 @@ class OnDeviceUzbekEngine {
             return AiResponse(voiceResponse = response, executionPlan = emptyList())
         }
 
-        // 2. Avvalgi savolga javoban xabar yozish ("Ha, 10 minutda yetib boraman deb yoz")
+        // 2. Avvalgi savolga javoban xabar yozish ("Ha, yetib bordim deb yoz")
         if (lastTurnContext.contains("xabar") && (text.startsWith("ha") || text.contains("deb yoz") || text.contains("yoz"))) {
             val replyText = extractReplyMessage(text)
             plan.add(ActionStep("reply_message", mapOf("text" to replyText)))
@@ -73,7 +73,7 @@ class OnDeviceUzbekEngine {
             val greetings = listOf(
                 "Assalomu alaykum! Telefoningizni boshqarishga tayyorman, qanday buyruq bajaramiz?",
                 "Vaalaykum assalom! Xizmatdaman, nimani ochib beray yoki qanday yordam bera olaman?",
-                "Salom! Bugun nima ish bajaramiz?"
+                "Salom! Qanday buyruq bajaramiz?"
             )
             return AiResponse(voiceResponse = greetings.random(), executionPlan = emptyList())
         }
@@ -99,7 +99,7 @@ class OnDeviceUzbekEngine {
             )
         }
 
-        // 5. Qurilma sozlamalari
+        // 5. Fonar / Chiroq boshqaruvi
         if (text.contains("fonar") || text.contains("chiroq") || text.contains("fonarni") || text.contains("chiroqni")) {
             val state = !(text.contains("o'chir") || text.contains("yop") || text.contains("ochir"))
             plan.add(ActionStep("toggle_setting", mapOf("setting" to "flashlight", "state" to state)))
@@ -109,25 +109,20 @@ class OnDeviceUzbekEngine {
             )
         }
 
-        if (text.contains("wi-fi") || text.contains("wifi") || text.contains("vayfay")) {
-            val state = !(text.contains("o'chir") || text.contains("yop"))
-            plan.add(ActionStep("toggle_setting", mapOf("setting" to "wifi", "state" to state)))
-            return AiResponse(
-                voiceResponse = if (state) "Wi-Fi yoqilmoqda." else "Wi-Fi o'chirilmoqda.",
-                executionPlan = plan
-            )
+        // 6. Rasmga olish / Kamera
+        if (text.contains("rasmga ol") || text.contains("rasm ol") || text.contains("foto ol") || text.contains("suratga ol") || text.contains("kamerani och")) {
+            plan.add(ActionStep("open_camera", emptyMap()))
+            return AiResponse(voiceResponse = "Kamera ochilmoqda, rasmga olishga tayyor.", executionPlan = plan)
         }
 
-        if (text.contains("bluetooth") || text.contains("blyutus")) {
-            val state = !(text.contains("o'chir") || text.contains("yop"))
-            plan.add(ActionStep("toggle_setting", mapOf("setting" to "bluetooth", "state" to state)))
-            return AiResponse(
-                voiceResponse = if (state) "Bluetooth yoqilmoqda." else "Bluetooth o'chirilmoqda.",
-                executionPlan = plan
-            )
+        // 7. Qo'ng'iroq qilish / Telefon qilish
+        if (text.contains("qo'ng'iroq") || text.contains("qongiroq") || text.contains("telefon qil") || text.contains("tel qil")) {
+            val contact = extractContact(text)
+            plan.add(ActionStep("make_call", mapOf("contact_or_number" to contact)))
+            return AiResponse(voiceResponse = "$contact ga qo'ng'iroq qilinmoqda.", executionPlan = plan)
         }
 
-        // 6. Ovoz balandligi
+        // 8. Ovoz balandligi
         if (text.contains("ovoz") || text.contains("ovozni")) {
             when {
                 text.contains("pasay") || text.contains("kam") || text.contains("pasayt") -> {
@@ -149,7 +144,7 @@ class OnDeviceUzbekEngine {
             }
         }
 
-        // 7. Tizim navigatsiyasi
+        // 9. Tizim navigatsiyasi (Home, Back, Recents)
         if (text.contains("bosh sahifa") || text.contains("bosh ekran") || text.contains("uyga") || text.contains("home")) {
             plan.add(ActionStep("global_action", mapOf("action" to "home")))
             return AiResponse(voiceResponse = "Bosh ekranga qaytildi.", executionPlan = plan)
@@ -170,12 +165,7 @@ class OnDeviceUzbekEngine {
             return AiResponse(voiceResponse = "Ochiq ilovalar ko'rsatilmoqda.", executionPlan = plan)
         }
 
-        if (text.contains("qulfla") || text.contains("ekranni ochir") || text.contains("ekranni o'chir")) {
-            plan.add(ActionStep("global_action", mapOf("action" to "lock")))
-            return AiResponse(voiceResponse = "Ekran qulflandi.", executionPlan = plan)
-        }
-
-        // 8. Skroll (aylantirish)
+        // 10. Skroll (aylantirish)
         if (text.contains("pastga") || text.contains("pastga tush") || text.contains("quyiga")) {
             plan.add(ActionStep("scroll", mapOf("direction" to "down")))
             return AiResponse(voiceResponse = "Pastga aylantirildi.", executionPlan = plan)
@@ -186,14 +176,7 @@ class OnDeviceUzbekEngine {
             return AiResponse(voiceResponse = "Tepaga aylantirildi.", executionPlan = plan)
         }
 
-        // 9. Qo'ng'iroq qilish
-        if (text.contains("qo'ng'iroq") || text.contains("qongiroq") || text.contains("telefon qil")) {
-            val contact = extractContact(text)
-            plan.add(ActionStep("make_call", mapOf("contact_or_number" to contact)))
-            return AiResponse(voiceResponse = "$contact ga qo'ng'iroq qilinmoqda.", executionPlan = plan)
-        }
-
-        // 10. Ekrandagi tugmani bosish
+        // 11. Ekrandagi tugmani bosish
         if (text.contains("bos") || text.contains("bosing") || text.contains("tugmasini bos")) {
             val btnTarget = text.replace("tugmasini", "").replace("tugmani", "").replace("bos", "").replace("bosing", "").trim()
             if (btnTarget.isNotBlank()) {
@@ -202,14 +185,14 @@ class OnDeviceUzbekEngine {
             }
         }
 
-        // 11. Telefondagi hamma ilovalarni ochish
+        // 12. Telefondagi hamma ilovalarni ochish
         val appQuery = extractAppQuery(text)
         if (appQuery.isNotBlank()) {
             plan.add(ActionStep("open_app", mapOf("app_name" to appQuery)))
             return AiResponse(voiceResponse = "$appQuery ochilmoqda.", executionPlan = plan)
         }
 
-        // 12. Noma'lum buyruq bo'lsa
+        // 13. Erkin / umumiy javob
         return AiResponse(
             voiceResponse = "Buyrug'ingizni tushundim. Telefoningizda bajarilmoqda.",
             executionPlan = plan
@@ -269,5 +252,5 @@ class OnDeviceUzbekEngine {
             .replace("‘", "'")
             .replace("  ", " ")
             .trim()
-    }
+        }
 }

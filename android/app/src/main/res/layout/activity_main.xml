@@ -16,7 +16,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🎙 OvozAI Assistent"
+            android:text="🎙 OvozAI Yordamchi"
             android:textColor="@color/white"
             android:textSize="26sp"
             android:textStyle="bold" />
@@ -25,11 +25,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Telefonni o'zbek tilida to'liq ovoz orqali boshqarish tizimi"
-            android:textColor="@color/text_muted"
+            android:text="100% Bepul, o'zbek tilida ovoz orqali telefonni boshqarish"
+            android:textColor="@color/teal_accent"
             android:textSize="14sp" />
 
-        <!-- 1. Accessibility Permission Card -->
+        <!-- 1. Ilovalar ustidan nazorat va ekranni boshqarish -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -47,7 +47,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="1. Maxsus Imkoniyatlar (Accessibility)"
+                    android:text="1. Ilovalar ustidan nazorat (Tugmalarni bosish va yozish)"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -65,7 +65,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="Telefonni mustaqil boshqarish, tugmalarni bosish va ilovalarda matn yozish uchun zarur."
+                    android:text="Ilovalarni ochish, tugmalarni bosish va matn yozish uchun zarur."
                     android:textColor="@color/text_muted"
                     android:textSize="12sp" />
 
@@ -74,12 +74,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Maxsus imkoniyatlarni yoqish"
+                    android:text="Ilovalarni boshqarishga ruxsat berish"
                     android:textAllCaps="false" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- 2. Overlay Permission Card -->
+        <!-- 2. Boshqa ilovalar ustida ko'rinish (Overlay) -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -97,7 +97,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="2. Boshqa ilovalar ustidan ko'rsatish (Overlay)"
+                    android:text="2. Suzuvchi tugma (Boshqa ilovalar ustida ko'rsatish)"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -111,17 +111,25 @@
                     android:textColor="@color/red_inactive"
                     android:textSize="13sp" />
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Har qanday ilovada turganda ekranda ovozli tugmacha turishi uchun kerak."
+                    android:textColor="@color/text_muted"
+                    android:textSize="12sp" />
+
                 <Button
                     android:id="@+id/btnGrantOverlay"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Overlay ruxsatini berish"
+                    android:text="Suzuvchi tugmaga ruxsat berish"
                     android:textAllCaps="false" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- 3. Notification Listener Permission Card (Yangi xabarlarni bilish uchun) -->
+        <!-- 3. Xabarlarni o'qish (Notification Listener) -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -139,7 +147,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="3. Bildirishnomalar (Xabarlarni o'qish)"
+                    android:text="3. Xabarlarni o'qish (Telegram, WhatsApp, SMS)"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -157,7 +165,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="Kelgan yangi xabarlarni (Telegram, WhatsApp, SMS) kimdan kelganini aytish va javob yozish uchun zarur."
+                    android:text="Kelgan xabarlarni ovozli o'qib berish va ovoz orqali javob qaytarish uchun."
                     android:textColor="@color/text_muted"
                     android:textSize="12sp" />
 
@@ -166,12 +174,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Bildirishnomalarga ruxsat berish"
+                    android:text="Xabarlarni o'qishga ruxsat berish"
                     android:textAllCaps="false" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- 4. Microphone Permission Card -->
+        <!-- 4. Mikrofon, Fonar/Kamera va Qo'ng'iroq ruxsati -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -189,13 +197,13 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="4. Mikrofon ruxsati"
+                    android:text="4. Ovoz, Fonar/Kamera va Telefon qilish"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/tvMicStatus"
+                    android:id="@+id/tvDirectPermissionsStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
@@ -203,56 +211,20 @@
                     android:textColor="@color/red_inactive"
                     android:textSize="13sp" />
 
-                <Button
-                    android:id="@+id/btnGrantMic"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="Mikrofonga ruxsat berish"
-                    android:textAllCaps="false" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- 5. Gemini API Key Card -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            app:cardBackgroundColor="@color/card_dark"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="4dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="5. Gemini AI Kaliti (Google AI Studio)"
-                    android:textColor="@color/white"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/etApiKey"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:backgroundTint="@color/teal_accent"
-                    android:hint="AIzaSy..."
-                    android:inputType="textPassword"
-                    android:textColor="@color/white"
-                    android:textColorHint="@color/text_muted" />
+                    android:layout_marginTop="6dp"
+                    android:text="Ovozni eshitish, fonar yoqish, rasmga olish va qo'ng'iroq qilish uchun."
+                    android:textColor="@color/text_muted"
+                    android:textSize="12sp" />
 
                 <Button
-                    android:id="@+id/btnSaveApiKey"
+                    android:id="@+id/btnGrantDirectPermissions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Kalitni saqlash"
+                    android:layout_marginTop="10dp"
+                    android:text="Ovoz, Kamera va Qo'ng'iroqqa ruxsat berish"
                     android:textAllCaps="false" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -277,7 +249,7 @@
             android:layout_marginTop="16dp"
             android:background="@color/card_dark"
             android:padding="12dp"
-            android:text="Tizim holati: Barcha ruxsatlarni berib, xizmatni ishga tushiring."
+            android:text="Tizim 100% bepul. Kerakli ruxsatlarni berib, ishga tushirish tugmasini bosing."
             android:textColor="@color/teal_accent"
             android:textSize="13sp" />
 

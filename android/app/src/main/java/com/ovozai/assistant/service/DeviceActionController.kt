@@ -5,7 +5,7 @@ import android.content.Intent
 import android.hardware.camera2.CameraManager
 import android.media.AudioManager
 import android.net.Uri
-import android.provider.Settings
+import android.provider.MediaStore
 import android.util.Log
 import com.ovozai.assistant.ai.ActionStep
 import com.ovozai.assistant.util.AppLauncher
@@ -46,35 +46,54 @@ class DeviceActionController(private val context: Context) {
                     true
                 }
 
+                // 4. Ekrandagi tugmani bosish
                 "click_text" -> {
                     val text = step.parameters["text"]?.toString() ?: ""
                     OvozAccessibilityService.instance?.clickByText(text) ?: false
                 }
+
+                // 5. Matn yozish
                 "type_text" -> {
                     val text = step.parameters["text"]?.toString() ?: ""
                     OvozAccessibilityService.instance?.inputText(text) ?: false
                 }
+
+                // 6. Ekranni aylantirish (scroll)
                 "scroll" -> {
                     val dir = step.parameters["direction"]?.toString() ?: "down"
                     OvozAccessibilityService.instance?.scrollScreen(dir == "down") ?: false
                 }
+
+                // 7. Global navigatsiya (Bosh ekran, Orqaga, Ochiq ilovalar)
                 "global_action" -> {
                     val action = step.parameters["action"]?.toString() ?: ""
                     OvozAccessibilityService.instance?.executeGlobal(action) ?: false
                 }
+
+                // 8. Ovoz balandligini sozlash
                 "set_volume" -> {
                     val percent = (step.parameters["percent"] as? Number)?.toInt() ?: 50
                     setVolume(percent)
                 }
+
+                // 9. Fonar / Chiroq
                 "toggle_setting" -> {
                     val setting = step.parameters["setting"]?.toString() ?: ""
                     val state = (step.parameters["state"] as? Boolean) ?: true
                     toggleSetting(setting, state)
                 }
+
+                // 10. Telefon qilish
                 "make_call" -> {
                     val contactOrNumber = step.parameters["contact_or_number"]?.toString() ?: ""
                     makeCall(contactOrNumber)
                 }
+
+                // 11. Kamerani ochish yoki rasmga olish rejimiga o'tish
+                "open_camera", "take_photo" -> {
+                    openCamera()
+                }
+
                 else -> false
             }
         } catch (e: Exception) {
@@ -103,20 +122,6 @@ class DeviceActionController(private val context: Context) {
                     false
                 }
             }
-            "wifi" -> {
-                val intent = Intent(Settings.ACTION_WIFI_SETTINGS).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                context.startActivity(intent)
-                true
-            }
-            "bluetooth" -> {
-                val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                context.startActivity(intent)
-                true
-            }
             else -> false
         }
     }
@@ -130,7 +135,30 @@ class DeviceActionController(private val context: Context) {
             context.startActivity(intent)
             true
         } catch (e: Exception) {
-            false
+            // Agar CALL_PHONE ruxsati berilmagan bo'lsa, DIAL oynasini ochadi
+            try {
+                val dialIntent = Intent(Intent.ACTION_DIAL).apply {
+                    data = Uri.parse("tel:$numberOrContact")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(dialIntent)
+                true
+            } catch (e2: Exception) {
+                false
+            }
+        }
+    }
+
+    private fun openCamera(): Boolean {
+        return try {
+            val intent = Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+            true
+        } catch (e: Exception) {
+            val (ok, _) = appLauncher.launchApp("kamera")
+            ok
         }
     }
 }
