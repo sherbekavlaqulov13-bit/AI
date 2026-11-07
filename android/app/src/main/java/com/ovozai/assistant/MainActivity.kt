@@ -44,9 +44,15 @@ class MainActivity : AppCompatActivity() {
         tvLiveLog = findViewById(R.id.tvLiveLog)
         btnToggleService = findViewById(R.id.btnToggleFloatingAssistant)
 
+        val btnOpenAppDetails = findViewById<Button>(R.id.btnOpenAppDetails)
         val btnGrantOverlay = findViewById<Button>(R.id.btnGrantOverlay)
         val btnGrantNotification = findViewById<Button>(R.id.btnGrantNotification)
         val btnGrantDirect = findViewById<Button>(R.id.btnGrantDirectPermissions)
+
+        // 🔓 Android 13/14 Restricted Settings yechish tugmasi
+        btnOpenAppDetails.setOnClickListener {
+            openAppInfoSettings()
+        }
 
         // 1. Boshqa ilovalar ustida ko'rsatish (Overlay)
         btnGrantOverlay.setOnClickListener {
@@ -59,8 +65,7 @@ class MainActivity : AppCompatActivity() {
                 val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
                 startActivity(intent)
             } catch (e: Exception) {
-                val intent = Intent(Settings.ACTION_SETTINGS)
-                startActivity(intent)
+                openAppInfoSettings()
             }
         }
 
@@ -78,6 +83,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun openAppInfoSettings() {
+        try {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.parse("package:$packageName")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+            Toast.makeText(
+                this,
+                "Yuqoridagi 3 nuqtani (⋮) bosib «Разрешить ограниченные настройки» ni bosing!",
+                Toast.LENGTH_LONG
+            ).show()
+        } catch (e: Exception) {
+            val intent = Intent(Settings.ACTION_SETTINGS)
+            startActivity(intent)
+        }
+    }
+
     private fun openOverlaySettings() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             try {
@@ -87,16 +110,7 @@ class MainActivity : AppCompatActivity() {
                 )
                 startActivity(intent)
             } catch (e: Exception) {
-                try {
-                    val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-                    startActivity(intent)
-                } catch (e2: Exception) {
-                    val intent = Intent(
-                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.parse("package:$packageName")
-                    )
-                    startActivity(intent)
-                }
+                openAppInfoSettings()
             }
         }
     }

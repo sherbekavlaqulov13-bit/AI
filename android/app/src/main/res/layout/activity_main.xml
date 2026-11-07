@@ -29,11 +29,56 @@
             android:textColor="@color/teal_accent"
             android:textSize="14sp" />
 
+        <!-- ⚠️ Android 13/14 Restricted Settings Guide Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardRestrictedSettingsNotice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="#2D1A1A"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚠️ Ruxsatlar kulrang bo'lib qolganmi?"
+                    android:textColor="#FF8A80"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Android 13/14 xavfsizlik tizimi internetdan olingan APK-larda ruxsatlarni vaqtincha cheklaydi («Controlled by restricted setting»).\n\nBuni yechish juda oson (1 marta qilinadi):\n1. Pastdagi qizil tugmani bosing (Ilova ma'lumoti ochiladi)\n2. Yuqori o'ng burchakdagi 3 ta nuqtani (⋮) bosing\n3. «Ruxsat berish» («Разрешить ограниченные настройки» / «Allow restricted settings») ni bosing\n4. So'ng qaytib bemalol ruxsatlarni yoqishingiz mumkin!"
+                    android:textColor="#FFCDD2"
+                    android:textSize="12sp"
+                    android:lineSpacingExtra="2dp" />
+
+                <Button
+                    android:id="@+id/btnOpenAppDetails"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:backgroundTint="#D32F2F"
+                    android:text="🔓 Cheklovni yechish (Ilova ma'lumoti)"
+                    android:textColor="@color/white"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
         <!-- 1. Boshqa ilovalar ustida ko'rsatish (Overlay) -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="14dp"
             app:cardBackgroundColor="@color/card_dark"
             app:cardCornerRadius="14dp"
             app:cardElevation="4dp">
@@ -115,7 +160,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="Kelgan xabarlarni ovozli o'qib berish va ovoz orqali tezkor javob qaytarish uchun."
+                    android:text="Kelgan yangi xabarlarni ovozli o'qib berish va tezkor javob qaytarish uchun."
                     android:textColor="@color/text_muted"
                     android:textSize="12sp" />
 
